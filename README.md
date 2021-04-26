@@ -18,4 +18,7 @@ Once you return to the google page, in the URI, you'll find the auth code. Copy 
 
 Set points/temperature joins are 1*10, 22.5 degrees Celsius would be 225d. Valid ranges are 90-320 (9-32 degrees Celsius) or the Fahrenheit equivalent.
 
+Make sure to set the Label of your device in the Nest APP. This is the name used in the Simpl+ module for device name. 
+To set the device name via the app  , Home-> Thermostat -> Where -> Label(this is the namer that must match your device name in Simpl+).
+
 Please visit this URI which outlines the limitations of this API: https://developers.google.com/nest/device-access/project/limits#sandbox_rate_limits
