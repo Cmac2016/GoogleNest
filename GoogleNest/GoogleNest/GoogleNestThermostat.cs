@@ -106,6 +106,8 @@ namespace GoogleNest
                     {
                         onCurrentHvac(deviceData["traits"]["sdm.devices.traits.ThermostatHvac"]["status"].ToString().Replace("\"", string.Empty));
                     }
+
+                    CrestronConsole.PrintLine("Current HVAC Mode : " + deviceData["traits"]["sdm.devices.traits.ThermostatHvac"]["status"].ToString().Replace("\"", string.Empty));
                 }
             }
         }

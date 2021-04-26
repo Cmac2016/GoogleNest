@@ -34,6 +34,7 @@ namespace GoogleNest
         internal string DeviceID;
         internal bool isOnline;
         internal bool isFahrenheit;
+      
 
         public GoogleNestDevice()
         {
@@ -173,6 +174,7 @@ namespace GoogleNest
                         client.HostVerification = false;
                         client.PeerVerification = false;
                         client.AllowAutoRedirect = false;
+                        client.IncludeHeaders = false;
 
                         HttpsClientRequest request = new HttpsClientRequest();
 
@@ -203,9 +205,12 @@ namespace GoogleNest
         //Get device info
         public void GetDevice()
         {
-            try
+          
+          // CrestronConsole.PrintLine("Device ID is: " + DeviceID);
+            
+            if (DeviceID.Length > 0)
             {
-                if (DeviceID.Length > 0)
+                try
                 {
                     using (HttpsClient client = new HttpsClient())
                     {
@@ -214,6 +219,7 @@ namespace GoogleNest
                         client.HostVerification = false;
                         client.PeerVerification = false;
                         client.AllowAutoRedirect = false;
+                        client.IncludeHeaders = false;
 
                         HttpsClientRequest request = new HttpsClientRequest();
 
@@ -223,6 +229,8 @@ namespace GoogleNest
                         request.Header.AddHeader(new HttpsHeader("Authorization", string.Format("{0} {1}", GoogleNestCloud.TokenType, GoogleNestCloud.Token)));
 
                         HttpsClientResponse response = client.Dispatch(request);
+
+                       // CrestronConsole.PrintLine("GET DEVICE INFO****************** " + response.ContentString);
 
                         if (response.ContentString != null)
                         {
@@ -234,19 +242,23 @@ namespace GoogleNest
                         }
                     }
                 }
-                else
+                catch (Exception e)
                 {
-                    if (onErrorMsg != null)
-                    {
-                        onErrorMsg("Device not found, ensure the Label field is set in the app");
-                    }
+                    ErrorLog.Exception("Exception ocurred in GetDevice", e);
                 }
             }
-            catch (Exception e)
+            else
             {
-                ErrorLog.Exception("Exception ocurred in GetDevice", e);
+                if (onErrorMsg != null)
+                {
+                    onErrorMsg("Device not found, ensure the Label field is set in the app");
+                }
             }
         }
+        
+            
+            
+        
 
         //Run fan for specified time
         public void RunFan(ushort timeInSeconds)

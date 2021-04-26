@@ -6,6 +6,8 @@ using Crestron.SimplSharp.CrestronIO;
 using Crestron.SimplSharp.Net.Https;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Net;
+
 
 namespace GoogleNest
 {
@@ -24,7 +26,7 @@ namespace GoogleNest
         private string refreshTokenFilePath;
         private string refreshTokenFileName = "google_nest_config";
         private string refreshToken;
-        
+
         private CTimer refreshTimer;
 
         internal static bool Initialized;
@@ -32,9 +34,12 @@ namespace GoogleNest
         internal static string TokenType;
         internal static Dictionary<string, GoogleNestDevice> devices = new Dictionary<string, GoogleNestDevice>();
 
+       
+
         //Check if refresh token file exists and consume if it does
         public void Initialize()
         {
+            
             try
             {
                 refreshTokenFilePath = string.Format(@"\user\{0}\", Directory.GetApplicationDirectory().Replace("/", "\\").Split('\\')[2]);
@@ -62,7 +67,7 @@ namespace GoogleNest
                 {
                     if (AuthCode.Length > 0)
                     {
-                        GetTokenAndRefreshToken();
+                         GetTokenAndRefreshToken();
                     }
                     else
                     {
@@ -82,7 +87,7 @@ namespace GoogleNest
                         onIsInitialized(1);
                     }
 
-                    GetDevices();
+                      GetDevices();
                 }
                 else
                 {
@@ -119,6 +124,7 @@ namespace GoogleNest
                     client.HostVerification = false;
                     client.PeerVerification = false;
                     client.AllowAutoRedirect = false;
+                    client.IncludeHeaders = false;
 
                     HttpsClientRequest request = new HttpsClientRequest();
 
@@ -126,6 +132,10 @@ namespace GoogleNest
                     request.RequestType = RequestType.Post;
 
                     HttpsClientResponse response = client.Dispatch(request);
+
+                   
+                        CrestronConsole.PrintLine("Refresh Token: " + response.ContentString);
+                    
 
                     if (response.ContentString != null)
                     {
@@ -160,6 +170,9 @@ namespace GoogleNest
         }
 
         //Use authorization code to retrieve a refresh token and a session token
+
+
+      
         private void GetTokenAndRefreshToken()
         {
             try
@@ -171,23 +184,33 @@ namespace GoogleNest
                     client.HostVerification = false;
                     client.PeerVerification = false;
                     client.AllowAutoRedirect = false;
+                    client.IncludeHeaders = false;
 
                     HttpsClientRequest request = new HttpsClientRequest();
 
                     request.Url.Parse("https://www.googleapis.com/oauth2/v4/token?client_id=" + ClientID + "&code=" + AuthCode + "&grant_type=authorization_code&redirect_uri=https://www.google.com&client_secret=" + ClientSecret);
                     request.RequestType = RequestType.Post;
 
+
                     HttpsClientResponse response = client.Dispatch(request);
+
+                   
+                       // CrestronConsole.PrintLine("GetTokenAndRefreshToken : " + response.ContentString);
+                    
+
 
                     if (response.ContentString != null)
                     {
+
                         if (response.ContentString.Length > 0)
                         {
+                            char[] charsToTrim = { '"' };
                             JObject body = JObject.Parse(response.ContentString);
 
                             if (body["expires_in"] != null)
                             {
                                 var seconds = Convert.ToInt16(body["expires_in"].ToString().Replace("\"", string.Empty)) - 10;
+
                                 var milliseconds = seconds * 1000;
 
                                 refreshTimer = new CTimer(UseRefreshToken, milliseconds);
@@ -232,6 +255,7 @@ namespace GoogleNest
                     client.HostVerification = false;
                     client.PeerVerification = false;
                     client.AllowAutoRedirect = false;
+                    client.IncludeHeaders = false;
 
                     HttpsClientRequest request = new HttpsClientRequest();
 
@@ -239,8 +263,10 @@ namespace GoogleNest
                     request.RequestType = RequestType.Get;
                     request.Header.ContentType = "application/json";
                     request.Header.AddHeader(new HttpsHeader("Authorization", string.Format("{0} {1}", TokenType, Token)));
-                    
+
                     HttpsClientResponse response = client.Dispatch(request);
+
+                  //  CrestronConsole.PrintLine("Get Devices ************ " + response.ContentString);
 
                     if (response.ContentString != null)
                     {
@@ -271,3 +297,5 @@ namespace GoogleNest
         }
     }
 }
+
+
